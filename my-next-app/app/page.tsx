@@ -3,7 +3,7 @@ export default function Home() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400">
       <main className="text-center">
         <h1 className="text-6xl font-bold text-white mb-4 drop-shadow-lg">
-          Hello, World!
+          Hey there!
         </h1>
         <p className="text-xl text-white/90 mb-8">
           Welcome to my first Next.js app
