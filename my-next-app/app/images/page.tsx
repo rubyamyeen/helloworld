@@ -1,6 +1,10 @@
 import { supabase, Image } from '@/lib/supabase';
 
 async function getImages(): Promise<{ data: Image[] | null; error: string | null }> {
+  if (!supabase) {
+    return { data: null, error: 'Database not configured. Please set SUPABASE_URL and SUPABASE_ANON_KEY environment variables.' };
+  }
+
   try {
     const { data, error } = await supabase
       .from('images')
