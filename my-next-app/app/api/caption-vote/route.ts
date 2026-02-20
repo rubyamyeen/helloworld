@@ -64,6 +64,7 @@ export async function POST(request: Request) {
         vote_value: voteValue,
         profile_id: user.id,
         caption_id: captionId,
+        created_datetime_utc: new Date().toISOString(),
       });
 
     if (insertError) {
