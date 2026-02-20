@@ -5,8 +5,9 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 function getBaseUrl() {
-  if (process.env.SITE_URL) {
-    return process.env.SITE_URL;
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    // Remove trailing slash if present
+    return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '');
   }
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
