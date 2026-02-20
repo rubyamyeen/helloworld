@@ -57,13 +57,12 @@ export async function POST(request: Request) {
       );
     }
 
-    // Query latest vote for this user+caption
+    // Query existing vote for this user+caption
     const { data: existingVotes, error: queryError } = await supabase
       .from('caption_votes')
-      .select('vote_value')
+      .select('id, vote_value')
       .eq('profile_id', user.id)
       .eq('caption_id', captionId)
-      .order('created_datetime_utc', { ascending: false })
       .limit(1);
 
     if (queryError) {
@@ -73,14 +72,34 @@ export async function POST(request: Request) {
       );
     }
 
-    const latestVote = existingVotes?.[0];
+    const existingVote = existingVotes?.[0];
 
-    // If same vote already exists, return success without inserting
-    if (latestVote && latestVote.vote_value === voteValue) {
+    // If same vote already exists, return success without changing
+    if (existingVote && existingVote.vote_value === voteValue) {
       return NextResponse.json({ ok: true, changed: false, voteValue });
     }
 
-    // Insert new vote
+    // If vote exists but different value, UPDATE it
+    if (existingVote) {
+      const { error: updateError } = await supabase
+        .from('caption_votes')
+        .update({
+          vote_value: voteValue,
+          modified_datetime_utc: new Date().toISOString(),
+        })
+        .eq('id', existingVote.id);
+
+      if (updateError) {
+        return NextResponse.json(
+          { error: updateError.message },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({ ok: true, changed: true, voteValue });
+    }
+
+    // No existing vote, INSERT new row
     const { error: insertError } = await supabase
       .from('caption_votes')
       .insert({
