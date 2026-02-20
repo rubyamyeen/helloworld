@@ -8,17 +8,22 @@ type CaptionWithImage = {
   image_url: string | null;
 };
 
+type UserVotes = Record<string, number>;
+
 type CaptionViewerProps = {
   captions: CaptionWithImage[];
   isAuthenticated: boolean;
+  initialVotes: UserVotes;
 };
 
-export function CaptionViewer({ captions, isAuthenticated }: CaptionViewerProps) {
+export function CaptionViewer({ captions, isAuthenticated, initialVotes }: CaptionViewerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isVoting, setIsVoting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [votes, setVotes] = useState<UserVotes>(initialVotes);
 
   const currentCaption = captions[currentIndex];
+  const currentVote = currentCaption ? votes[currentCaption.id] : undefined;
   const hasPrev = currentIndex > 0;
   const hasNext = currentIndex < captions.length - 1;
 
@@ -37,7 +42,6 @@ export function CaptionViewer({ captions, isAuthenticated }: CaptionViewerProps)
   }
 
   function advanceToNext() {
-    // Auto-advance: wrap around to 0 at the end
     if (currentIndex < captions.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
@@ -67,9 +71,14 @@ export function CaptionViewer({ captions, isAuthenticated }: CaptionViewerProps)
         return;
       }
 
-      // Success - auto-advance to next
+      // Update local vote state
+      setVotes(prev => ({ ...prev, [currentCaption.id]: voteValue }));
       setIsVoting(false);
-      advanceToNext();
+
+      // Only auto-advance if the vote actually changed
+      if (data.changed) {
+        advanceToNext();
+      }
     } catch (err) {
       setError('Failed to vote');
       setIsVoting(false);
@@ -109,6 +118,13 @@ export function CaptionViewer({ captions, isAuthenticated }: CaptionViewerProps)
             {currentCaption.content}
           </p>
 
+          {/* Current vote status */}
+          {currentVote && (
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+              {currentVote === 1 ? '👍 You upvoted this' : '👎 You downvoted this'}
+            </p>
+          )}
+
           {/* Error message */}
           {error && (
             <p className="text-red-600 dark:text-red-400 text-sm mb-4">{error}</p>
@@ -120,14 +136,22 @@ export function CaptionViewer({ captions, isAuthenticated }: CaptionViewerProps)
               <button
                 onClick={() => handleVote(1)}
                 disabled={isVoting}
-                className="px-4 py-2 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-200 dark:hover:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                className={`px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                  currentVote === 1
+                    ? 'bg-green-500 text-white ring-2 ring-green-300 dark:ring-green-700'
+                    : 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800'
+                }`}
               >
                 👍 Upvote
               </button>
               <button
                 onClick={() => handleVote(-1)}
                 disabled={isVoting}
-                className="px-4 py-2 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-200 dark:hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                className={`px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                  currentVote === -1
+                    ? 'bg-red-500 text-white ring-2 ring-red-300 dark:ring-red-700'
+                    : 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800'
+                }`}
               >
                 👎 Downvote
               </button>

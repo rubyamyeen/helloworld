@@ -57,7 +57,30 @@ export async function POST(request: Request) {
       );
     }
 
-    // Insert vote into caption_votes
+    // Query latest vote for this user+caption
+    const { data: existingVotes, error: queryError } = await supabase
+      .from('caption_votes')
+      .select('vote_value')
+      .eq('profile_id', user.id)
+      .eq('caption_id', captionId)
+      .order('created_datetime_utc', { ascending: false })
+      .limit(1);
+
+    if (queryError) {
+      return NextResponse.json(
+        { error: queryError.message },
+        { status: 500 }
+      );
+    }
+
+    const latestVote = existingVotes?.[0];
+
+    // If same vote already exists, return success without inserting
+    if (latestVote && latestVote.vote_value === voteValue) {
+      return NextResponse.json({ ok: true, changed: false, voteValue });
+    }
+
+    // Insert new vote
     const { error: insertError } = await supabase
       .from('caption_votes')
       .insert({
@@ -74,7 +97,7 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json({ success: true, message: 'Vote recorded successfully.' });
+    return NextResponse.json({ ok: true, changed: true, voteValue });
   } catch (err) {
     return NextResponse.json(
       { error: 'Failed to process vote request.' },

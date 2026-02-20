@@ -10,6 +10,8 @@ type CaptionWithImage = {
   image_url: string | null;
 };
 
+type UserVotes = Record<string, number>; // captionId -> voteValue (1 or -1)
+
 async function getCaptionsWithImages(supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>) {
   const { data, error } = await supabase
     .from('captions')
@@ -31,6 +33,35 @@ async function getCaptionsWithImages(supabase: Awaited<ReturnType<typeof createS
   }));
 
   return { data: captions, error: null };
+}
+
+async function getUserVotes(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  userId: string,
+  captionIds: string[]
+): Promise<UserVotes> {
+  if (captionIds.length === 0) return {};
+
+  // Get latest vote for each caption by this user
+  // We'll fetch all votes and then pick the latest per caption
+  const { data, error } = await supabase
+    .from('caption_votes')
+    .select('caption_id, vote_value, created_datetime_utc')
+    .eq('profile_id', userId)
+    .in('caption_id', captionIds)
+    .order('created_datetime_utc', { ascending: false });
+
+  if (error || !data) return {};
+
+  // Get latest vote per caption
+  const votes: UserVotes = {};
+  for (const vote of data) {
+    if (!(vote.caption_id in votes)) {
+      votes[vote.caption_id] = vote.vote_value;
+    }
+  }
+
+  return votes;
 }
 
 export default async function ImagesPage() {
@@ -82,11 +113,19 @@ export default async function ImagesPage() {
     );
   }
 
+  // Fetch user's existing votes
+  const captionIds = captions.map(c => c.id);
+  const userVotes = await getUserVotes(supabase, user.id, captionIds);
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 lg:p-8">
       <div className="max-w-2xl mx-auto">
         <Header user={user} />
-        <CaptionViewer captions={captions} isAuthenticated={isAuthenticated} />
+        <CaptionViewer
+          captions={captions}
+          isAuthenticated={isAuthenticated}
+          initialVotes={userVotes}
+        />
       </div>
     </div>
   );
