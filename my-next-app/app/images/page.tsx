@@ -1,7 +1,7 @@
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { SignInButton } from './sign-in-button';
 import { SignOutButton } from './sign-out-button';
-import { CaptionViewer } from './caption-viewer';
+import { TabWrapper } from './tab-wrapper';
 import { DarkModeToggle } from './dark-mode-toggle';
 
 type CaptionWithImage = {
@@ -104,10 +104,11 @@ export default async function ImagesPage() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 lg:p-8">
         <div className="max-w-2xl mx-auto">
           <Header user={user} />
-          <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 text-center">
-            <h2 className="text-gray-800 dark:text-gray-200 text-lg font-semibold mb-2">No Captions Found</h2>
-            <p className="text-gray-600 dark:text-gray-400">There are no captions in the database yet.</p>
-          </div>
+          <TabWrapper
+            captions={[]}
+            isAuthenticated={isAuthenticated}
+            initialVotes={{}}
+          />
         </div>
       </div>
     );
@@ -121,7 +122,7 @@ export default async function ImagesPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 lg:p-8">
       <div className="max-w-2xl mx-auto">
         <Header user={user} />
-        <CaptionViewer
+        <TabWrapper
           captions={captions}
           isAuthenticated={isAuthenticated}
           initialVotes={userVotes}
