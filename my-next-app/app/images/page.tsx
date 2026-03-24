@@ -72,13 +72,18 @@ export default async function ImagesPage() {
   // Gated UI - show sign in if not authenticated
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="absolute top-4 right-4">
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
+        <div className="absolute top-6 right-6">
           <DarkModeToggle />
         </div>
-        <div className="glass-card rounded-2xl p-10 max-w-md text-center shadow-xl">
-          <h1 className="text-3xl font-medium text-slate-900 dark:text-slate-100 mb-3 tracking-tight">Caption Gallery</h1>
-          <p className="text-slate-600 dark:text-slate-400 mb-8 text-lg">Sign in to view and vote on captions.</p>
+        <div className="card-elevated rounded-3xl p-12 max-w-md text-center">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center shadow-lg">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+          </div>
+          <h1 className="text-3xl font-semibold text-slate-900 dark:text-white mb-3">Caption Gallery</h1>
+          <p className="text-slate-500 dark:text-slate-400 mb-8 text-base leading-relaxed">Sign in to view AI-generated captions and vote on your favorites.</p>
           <SignInButton />
         </div>
       </div>
@@ -102,7 +107,7 @@ export default async function ImagesPage() {
   if (!captions || captions.length === 0) {
     return (
       <div className="min-h-screen p-4 sm:p-6 lg:p-8">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           <Header user={user} />
           <TabWrapper
             captions={[]}
@@ -120,7 +125,7 @@ export default async function ImagesPage() {
 
   return (
     <div className="min-h-screen p-4 sm:p-6 lg:p-8">
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-3xl mx-auto">
         <Header user={user} />
         <TabWrapper
           captions={captions}
@@ -134,16 +139,23 @@ export default async function ImagesPage() {
 
 function Header({ user }: { user: { email?: string } | null }) {
   return (
-    <div className="flex justify-between items-center mb-10">
-      <h1 className="text-3xl font-medium text-slate-900 dark:text-slate-100 tracking-tight">Caption Gallery</h1>
+    <div className="flex justify-between items-center mb-8 pb-6 border-b border-violet-200/50 dark:border-violet-500/20">
       <div className="flex items-center gap-4">
-        <DarkModeToggle />
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center shadow-md">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Caption Gallery</h1>
+      </div>
+      <div className="flex items-center gap-3">
         {user && (
-          <>
-            <span className="text-sm text-slate-600 dark:text-slate-400 hidden sm:inline">{user.email}</span>
-            <SignOutButton />
-          </>
+          <span className="text-sm text-slate-500 dark:text-slate-400 hidden sm:inline px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800/50">
+            {user.email}
+          </span>
         )}
+        <DarkModeToggle />
+        {user && <SignOutButton />}
       </div>
     </div>
   );

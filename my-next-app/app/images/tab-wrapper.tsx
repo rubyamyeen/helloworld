@@ -26,26 +26,30 @@ export function TabWrapper({ captions, isAuthenticated, initialVotes }: TabWrapp
   return (
     <div>
       {/* Tab switcher */}
-      <div className="flex gap-2 mb-8 p-1 glass-card rounded-xl w-fit">
+      <div className="flex gap-1 mb-8 p-1.5 glass-card rounded-2xl w-fit">
         <button
           onClick={() => setActiveTab('gallery')}
-          className={`px-5 py-2.5 font-medium text-sm rounded-lg transition-all ${
-            activeTab === 'gallery'
-              ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-          }`}
+          className={`tab-button ${activeTab === 'gallery' ? 'active' : ''}`}
         >
-          Gallery
+          <span className="flex items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+            Gallery
+          </span>
         </button>
         <button
           onClick={() => setActiveTab('generate')}
-          className={`px-5 py-2.5 font-medium text-sm rounded-lg transition-all ${
-            activeTab === 'generate'
-              ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-          }`}
+          className={`tab-button ${activeTab === 'generate' ? 'active' : ''}`}
         >
-          Generate
+          <span className="flex items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6l2.1 2.1M5.6 18.4l2.1-2.1m8.6-8.6l2.1-2.1"/>
+            </svg>
+            Generate
+          </span>
         </button>
       </div>
 

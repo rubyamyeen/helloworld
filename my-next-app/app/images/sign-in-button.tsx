@@ -7,7 +7,7 @@ export function SignInButton() {
     <form action={signInWithGoogle}>
       <button
         type="submit"
-        className="flex items-center gap-3 px-6 py-3.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl shadow-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-all font-medium"
+        className="inline-flex items-center gap-3 px-6 py-3.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-2xl shadow-lg hover:shadow-xl border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-all font-medium"
       >
         <svg className="w-5 h-5" viewBox="0 0 24 24">
           <path
