@@ -3,13 +3,23 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #f9fafb;
-  --foreground: #171717;
+  --background: #f8f9fc;
+  --foreground: #1a2f2a;
+  --gradient-start: #e8f4f8;
+  --gradient-mid: #f0e6f6;
+  --gradient-end: #fef6e8;
+  --card-bg: rgba(255, 255, 255, 0.85);
+  --card-border: rgba(255, 255, 255, 0.6);
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  --background: #1a2f2a;
+  --foreground: #f5f5f0;
+  --gradient-start: #1a2f2a;
+  --gradient-mid: #1e3832;
+  --gradient-end: #162824;
+  --card-bg: rgba(30, 56, 50, 0.8);
+  --card-border: rgba(255, 255, 255, 0.1);
 }
 
 @theme inline {
@@ -20,7 +30,89 @@
 }
 
 body {
-  background: var(--background);
+  background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-mid) 50%, var(--gradient-end) 100%);
+  background-attachment: fixed;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+}
+
+/* Typography refinements */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+/* Card glass effect */
+.glass-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--card-border);
+}
+
+/* Vote button styles */
+.vote-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.vote-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.vote-btn-up {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+}
+
+.vote-btn-up:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.2);
+  transform: scale(1.05);
+}
+
+.vote-btn-up.active {
+  background: #22c55e;
+  color: white;
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+}
+
+.vote-btn-down {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.vote-btn-down:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+  transform: scale(1.05);
+}
+
+.vote-btn-down.active {
+  background: #ef4444;
+  color: white;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+}
+
+/* Dark mode vote buttons */
+.dark .vote-btn-up {
+  background: rgba(34, 197, 94, 0.15);
+}
+
+.dark .vote-btn-up:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.25);
+}
+
+.dark .vote-btn-down {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.dark .vote-btn-down:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.25);
 }

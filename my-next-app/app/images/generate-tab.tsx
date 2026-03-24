@@ -88,7 +88,7 @@ export function GenerateTab({ onViewGallery }: GenerateTabProps) {
     // Handle array of caption objects
     if (Array.isArray(captions)) {
       return (
-        <ul className="space-y-2">
+        <ul className="space-y-3">
           {captions.map((caption, index) => {
             // If caption is an object with a content or text field
             const text = typeof caption === 'string'
@@ -97,7 +97,7 @@ export function GenerateTab({ onViewGallery }: GenerateTabProps) {
             return (
               <li
                 key={index}
-                className="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-gray-100"
+                className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl text-gray-800 dark:text-gray-100 leading-relaxed"
               >
                 {text}
               </li>
@@ -109,7 +109,7 @@ export function GenerateTab({ onViewGallery }: GenerateTabProps) {
 
     // Fallback: render as JSON
     return (
-      <pre className="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm overflow-auto text-gray-900 dark:text-gray-100">
+      <pre className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl text-sm overflow-auto text-gray-800 dark:text-gray-100">
         {JSON.stringify(captions, null, 2)}
       </pre>
     );
@@ -117,17 +117,17 @@ export function GenerateTab({ onViewGallery }: GenerateTabProps) {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+      <div className="glass-card rounded-2xl shadow-lg p-8">
+        <h2 className="text-2xl font-medium text-gray-900 dark:text-gray-100 mb-3 tracking-tight">
           Generate Captions
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
+        <p className="text-gray-600 dark:text-gray-400 mb-8">
           Upload an image to generate captions using AI.
         </p>
 
         <form onSubmit={handleSubmit}>
           {/* File picker */}
-          <div className="mb-4">
+          <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Select Image
             </label>
@@ -138,12 +138,12 @@ export function GenerateTab({ onViewGallery }: GenerateTabProps) {
               onChange={handleFileChange}
               disabled={isUploading}
               className="block w-full text-sm text-gray-500 dark:text-gray-400
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-lg file:border-0
+                file:mr-4 file:py-2.5 file:px-5
+                file:rounded-xl file:border-0
                 file:text-sm file:font-medium
-                file:bg-blue-50 file:text-blue-700
-                dark:file:bg-blue-900 dark:file:text-blue-300
-                hover:file:bg-blue-100 dark:hover:file:bg-blue-800
+                file:bg-gray-100 file:text-gray-700
+                dark:file:bg-gray-700 dark:file:text-gray-300
+                hover:file:bg-gray-200 dark:hover:file:bg-gray-600
                 file:cursor-pointer file:transition-colors
                 disabled:opacity-50"
             />
@@ -151,8 +151,8 @@ export function GenerateTab({ onViewGallery }: GenerateTabProps) {
 
           {/* Preview */}
           {preview && (
-            <div className="mb-4">
-              <div className="relative aspect-video bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden">
+            <div className="mb-6">
+              <div className="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-xl overflow-hidden">
                 <img
                   src={preview}
                   alt="Preview"
@@ -163,7 +163,7 @@ export function GenerateTab({ onViewGallery }: GenerateTabProps) {
                 type="button"
                 onClick={clearSelection}
                 disabled={isUploading}
-                className="mt-2 text-sm text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+                className="mt-3 text-sm text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
               >
                 Clear selection
               </button>
@@ -174,8 +174,8 @@ export function GenerateTab({ onViewGallery }: GenerateTabProps) {
           <button
             type="submit"
             disabled={!file || isUploading}
-            className="w-full py-3 px-4 bg-blue-600 text-white font-medium rounded-lg
-              hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed
+            className="w-full py-3.5 px-4 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 font-medium rounded-xl
+              hover:bg-gray-800 dark:hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed
               transition-colors"
           >
             {isUploading ? 'Processing...' : 'Upload & Generate Captions'}
@@ -184,9 +184,9 @@ export function GenerateTab({ onViewGallery }: GenerateTabProps) {
 
         {/* Progress */}
         {progress && (
-          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-            <p className="text-blue-700 dark:text-blue-300 text-sm flex items-center gap-2">
-              <span className="animate-spin">⏳</span>
+          <div className="mt-6 p-4 bg-gray-100 dark:bg-gray-700/50 rounded-xl">
+            <p className="text-gray-700 dark:text-gray-300 text-sm flex items-center gap-3">
+              <span className="animate-spin inline-block w-4 h-4 border-2 border-gray-400 border-t-gray-700 dark:border-gray-500 dark:border-t-gray-200 rounded-full"></span>
               {progress}
             </p>
           </div>
@@ -194,20 +194,20 @@ export function GenerateTab({ onViewGallery }: GenerateTabProps) {
 
         {/* Error */}
         {error && (
-          <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/30 rounded-lg">
+          <div className="mt-6 p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800/50">
             <p className="text-red-700 dark:text-red-300 text-sm">{error}</p>
           </div>
         )}
 
         {/* Results */}
         {result && (
-          <div className="mt-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">
+          <div className="mt-8">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
               Generated Captions
             </h3>
 
             {/* Show uploaded image */}
-            <div className="mb-4 aspect-video bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden">
+            <div className="mb-5 aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-xl overflow-hidden">
               <img
                 src={result.cdnUrl}
                 alt="Uploaded image"
@@ -216,7 +216,7 @@ export function GenerateTab({ onViewGallery }: GenerateTabProps) {
             </div>
 
             {/* Captions */}
-            <div className="mb-4">
+            <div className="mb-5">
               {renderCaptions(result.captions)}
             </div>
 
@@ -224,8 +224,8 @@ export function GenerateTab({ onViewGallery }: GenerateTabProps) {
             <button
               type="button"
               onClick={onViewGallery}
-              className="w-full py-2 px-4 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300
-                font-medium rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              className="w-full py-3 px-4 glass-card text-gray-700 dark:text-gray-300
+                font-medium rounded-xl hover:bg-white/50 dark:hover:bg-white/10 transition-colors"
             >
               View in Gallery
             </button>

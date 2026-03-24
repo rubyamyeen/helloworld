@@ -72,13 +72,13 @@ export default async function ImagesPage() {
   // Gated UI - show sign in if not authenticated
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <div className="absolute top-4 right-4">
           <DarkModeToggle />
         </div>
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-8 max-w-md text-center shadow-sm">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Caption Gallery</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">Sign in to view and vote on captions.</p>
+        <div className="glass-card rounded-2xl p-10 max-w-md text-center shadow-xl">
+          <h1 className="text-3xl font-medium text-gray-900 dark:text-gray-100 mb-3 tracking-tight">Caption Gallery</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-8 text-lg">Sign in to view and vote on captions.</p>
           <SignInButton />
         </div>
       </div>
@@ -90,9 +90,9 @@ export default async function ImagesPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 max-w-md text-center">
-          <h2 className="text-red-800 dark:text-red-400 text-lg font-semibold mb-2">Error Loading Captions</h2>
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="glass-card rounded-2xl p-8 max-w-md text-center border-red-200 dark:border-red-800/50">
+          <h2 className="text-red-700 dark:text-red-400 text-xl font-medium mb-3">Error Loading Captions</h2>
           <p className="text-red-600 dark:text-red-300">{error}</p>
         </div>
       </div>
@@ -101,7 +101,7 @@ export default async function ImagesPage() {
 
   if (!captions || captions.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 lg:p-8">
+      <div className="min-h-screen p-4 sm:p-6 lg:p-8">
         <div className="max-w-2xl mx-auto">
           <Header user={user} />
           <TabWrapper
@@ -119,7 +119,7 @@ export default async function ImagesPage() {
   const userVotes = await getUserVotes(supabase, user.id, captionIds);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen p-4 sm:p-6 lg:p-8">
       <div className="max-w-2xl mx-auto">
         <Header user={user} />
         <TabWrapper
@@ -134,13 +134,13 @@ export default async function ImagesPage() {
 
 function Header({ user }: { user: { email?: string } | null }) {
   return (
-    <div className="flex justify-between items-center mb-8">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Caption Gallery</h1>
+    <div className="flex justify-between items-center mb-10">
+      <h1 className="text-3xl font-medium text-gray-900 dark:text-gray-100 tracking-tight">Caption Gallery</h1>
       <div className="flex items-center gap-4">
         <DarkModeToggle />
         {user && (
           <>
-            <span className="text-sm text-gray-600 dark:text-gray-400">{user.email}</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">{user.email}</span>
             <SignOutButton />
           </>
         )}

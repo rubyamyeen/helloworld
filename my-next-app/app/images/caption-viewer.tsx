@@ -96,9 +96,9 @@ export function CaptionViewer({ captions, isAuthenticated, initialVotes }: Capti
   return (
     <div className="max-w-2xl mx-auto">
       {/* Card */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-4">
+      <div className="glass-card rounded-2xl shadow-lg overflow-hidden mb-6">
         {/* Image */}
-        <div className="aspect-video relative bg-gray-200 dark:bg-gray-700">
+        <div className="aspect-video relative bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
           {currentCaption.image_url ? (
             <img
               src={currentCaption.image_url}
@@ -113,17 +113,10 @@ export function CaptionViewer({ captions, isAuthenticated, initialVotes }: Capti
         </div>
 
         {/* Caption */}
-        <div className="p-6">
-          <p className="text-lg text-gray-900 dark:text-gray-100 mb-4">
+        <div className="p-8">
+          <p className="text-xl leading-relaxed text-gray-800 dark:text-gray-100 mb-6">
             {currentCaption.content}
           </p>
-
-          {/* Current vote status */}
-          {currentVote && (
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-              {currentVote === 1 ? '👍 You upvoted this' : '👎 You downvoted this'}
-            </p>
-          )}
 
           {/* Error message */}
           {error && (
@@ -132,31 +125,29 @@ export function CaptionViewer({ captions, isAuthenticated, initialVotes }: Capti
 
           {/* Voting */}
           {isAuthenticated ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <button
                 onClick={() => handleVote(1)}
                 disabled={isVoting}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                  currentVote === 1
-                    ? 'bg-green-500 text-white ring-2 ring-green-300 dark:ring-green-700'
-                    : 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800'
-                }`}
+                className={`vote-btn vote-btn-up ${currentVote === 1 ? 'active' : ''}`}
+                title="Upvote"
               >
-                👍 Upvote
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+                </svg>
               </button>
               <button
                 onClick={() => handleVote(-1)}
                 disabled={isVoting}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                  currentVote === -1
-                    ? 'bg-red-500 text-white ring-2 ring-red-300 dark:ring-red-700'
-                    : 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800'
-                }`}
+                className={`vote-btn vote-btn-down ${currentVote === -1 ? 'active' : ''}`}
+                title="Downvote"
               >
-                👎 Downvote
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17" />
+                </svg>
               </button>
               {isVoting && (
-                <span className="text-sm text-gray-500 dark:text-gray-400">Voting...</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">...</span>
               )}
             </div>
           ) : (
@@ -170,21 +161,31 @@ export function CaptionViewer({ captions, isAuthenticated, initialVotes }: Capti
         <button
           onClick={goToPrev}
           disabled={!hasPrev}
-          className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="px-5 py-2.5 glass-card rounded-xl text-gray-700 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed transition-all font-medium"
         >
-          ← Previous
+          <span className="flex items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Previous
+          </span>
         </button>
 
-        <span className="text-gray-600 dark:text-gray-400">
-          {currentIndex + 1} of {captions.length}
+        <span className="text-sm font-medium text-gray-600 dark:text-gray-400 tabular-nums">
+          {currentIndex + 1} / {captions.length}
         </span>
 
         <button
           onClick={goToNext}
           disabled={!hasNext}
-          className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="px-5 py-2.5 glass-card rounded-xl text-gray-700 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed transition-all font-medium"
         >
-          Next →
+          <span className="flex items-center gap-2">
+            Next
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </span>
         </button>
       </div>
     </div>

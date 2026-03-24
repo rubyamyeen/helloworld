@@ -26,32 +26,26 @@ export function TabWrapper({ captions, isAuthenticated, initialVotes }: TabWrapp
   return (
     <div>
       {/* Tab switcher */}
-      <div className="flex mb-6 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex gap-2 mb-8 p-1 glass-card rounded-xl w-fit">
         <button
           onClick={() => setActiveTab('gallery')}
-          className={`px-4 py-2 font-medium text-sm transition-colors relative ${
+          className={`px-5 py-2.5 font-medium text-sm rounded-lg transition-all ${
             activeTab === 'gallery'
-              ? 'text-blue-600 dark:text-blue-400'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-sm'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
           }`}
         >
           Gallery
-          {activeTab === 'gallery' && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400" />
-          )}
         </button>
         <button
           onClick={() => setActiveTab('generate')}
-          className={`px-4 py-2 font-medium text-sm transition-colors relative ${
+          className={`px-5 py-2.5 font-medium text-sm rounded-lg transition-all ${
             activeTab === 'generate'
-              ? 'text-blue-600 dark:text-blue-400'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-sm'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
           }`}
         >
           Generate
-          {activeTab === 'generate' && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400" />
-          )}
         </button>
       </div>
 
