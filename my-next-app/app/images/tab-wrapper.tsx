@@ -31,8 +31,8 @@ export function TabWrapper({ captions, isAuthenticated, initialVotes }: TabWrapp
           onClick={() => setActiveTab('gallery')}
           className={`px-5 py-2.5 font-medium text-sm rounded-lg transition-all ${
             activeTab === 'gallery'
-              ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
           }`}
         >
           Gallery
@@ -41,8 +41,8 @@ export function TabWrapper({ captions, isAuthenticated, initialVotes }: TabWrapp
           onClick={() => setActiveTab('generate')}
           className={`px-5 py-2.5 font-medium text-sm rounded-lg transition-all ${
             activeTab === 'generate'
-              ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
           }`}
         >
           Generate

@@ -77,8 +77,8 @@ export default async function ImagesPage() {
           <DarkModeToggle />
         </div>
         <div className="glass-card rounded-2xl p-10 max-w-md text-center shadow-xl">
-          <h1 className="text-3xl font-medium text-gray-900 dark:text-gray-100 mb-3 tracking-tight">Caption Gallery</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-8 text-lg">Sign in to view and vote on captions.</p>
+          <h1 className="text-3xl font-medium text-slate-900 dark:text-slate-100 mb-3 tracking-tight">Caption Gallery</h1>
+          <p className="text-slate-600 dark:text-slate-400 mb-8 text-lg">Sign in to view and vote on captions.</p>
           <SignInButton />
         </div>
       </div>
@@ -135,12 +135,12 @@ export default async function ImagesPage() {
 function Header({ user }: { user: { email?: string } | null }) {
   return (
     <div className="flex justify-between items-center mb-10">
-      <h1 className="text-3xl font-medium text-gray-900 dark:text-gray-100 tracking-tight">Caption Gallery</h1>
+      <h1 className="text-3xl font-medium text-slate-900 dark:text-slate-100 tracking-tight">Caption Gallery</h1>
       <div className="flex items-center gap-4">
         <DarkModeToggle />
         {user && (
           <>
-            <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">{user.email}</span>
+            <span className="text-sm text-slate-600 dark:text-slate-400 hidden sm:inline">{user.email}</span>
             <SignOutButton />
           </>
         )}

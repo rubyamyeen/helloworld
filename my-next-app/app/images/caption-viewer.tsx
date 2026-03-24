@@ -87,7 +87,7 @@ export function CaptionViewer({ captions, isAuthenticated, initialVotes }: Capti
 
   if (!currentCaption) {
     return (
-      <div className="text-center text-gray-500 dark:text-gray-400">
+      <div className="text-center text-slate-500 dark:text-slate-400">
         No captions available
       </div>
     );
@@ -98,7 +98,7 @@ export function CaptionViewer({ captions, isAuthenticated, initialVotes }: Capti
       {/* Card */}
       <div className="glass-card rounded-2xl shadow-lg overflow-hidden mb-6">
         {/* Image */}
-        <div className="aspect-video relative bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
+        <div className="aspect-video relative bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900">
           {currentCaption.image_url ? (
             <img
               src={currentCaption.image_url}
@@ -106,7 +106,7 @@ export function CaptionViewer({ captions, isAuthenticated, initialVotes }: Capti
               className="w-full h-full object-contain"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-500">
+            <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-slate-500">
               No image
             </div>
           )}
@@ -114,7 +114,7 @@ export function CaptionViewer({ captions, isAuthenticated, initialVotes }: Capti
 
         {/* Caption */}
         <div className="p-8">
-          <p className="text-xl leading-relaxed text-gray-800 dark:text-gray-100 mb-6">
+          <p className="text-xl leading-relaxed text-slate-800 dark:text-slate-100 mb-6">
             {currentCaption.content}
           </p>
 
@@ -147,11 +147,11 @@ export function CaptionViewer({ captions, isAuthenticated, initialVotes }: Capti
                 </svg>
               </button>
               {isVoting && (
-                <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">...</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400 ml-2">...</span>
               )}
             </div>
           ) : (
-            <p className="text-gray-500 dark:text-gray-400 text-sm">Sign in to vote</p>
+            <p className="text-slate-500 dark:text-slate-400 text-sm">Sign in to vote</p>
           )}
         </div>
       </div>
@@ -161,7 +161,7 @@ export function CaptionViewer({ captions, isAuthenticated, initialVotes }: Capti
         <button
           onClick={goToPrev}
           disabled={!hasPrev}
-          className="px-5 py-2.5 glass-card rounded-xl text-gray-700 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed transition-all font-medium"
+          className="px-5 py-2.5 glass-card rounded-xl text-slate-700 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed transition-all font-medium"
         >
           <span className="flex items-center gap-2">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -171,14 +171,14 @@ export function CaptionViewer({ captions, isAuthenticated, initialVotes }: Capti
           </span>
         </button>
 
-        <span className="text-sm font-medium text-gray-600 dark:text-gray-400 tabular-nums">
+        <span className="text-sm font-medium text-slate-600 dark:text-slate-400 tabular-nums">
           {currentIndex + 1} / {captions.length}
         </span>
 
         <button
           onClick={goToNext}
           disabled={!hasNext}
-          className="px-5 py-2.5 glass-card rounded-xl text-gray-700 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed transition-all font-medium"
+          className="px-5 py-2.5 glass-card rounded-xl text-slate-700 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed transition-all font-medium"
         >
           <span className="flex items-center gap-2">
             Next
