@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 type CaptionWithImage = {
   id: string;
   content: string;
   image_url: string | null;
+  image_id?: string;
 };
 
 type UserVotes = Record<string, number>;
@@ -14,7 +15,25 @@ type CaptionViewerProps = {
   captions: CaptionWithImage[];
   isAuthenticated: boolean;
   initialVotes: UserVotes;
+  highlightImageId?: string | null;
+  onHighlightShown?: () => void;
 };
+
+// Toast component for vote feedback
+function Toast({ message, show, type = 'success' }: { message: string; show: boolean; type?: 'success' | 'info' }) {
+  return (
+    <div className={`toast ${type} ${show ? 'show' : ''}`}>
+      <span className="flex items-center gap-2">
+        {type === 'success' && (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        )}
+        {message}
+      </span>
+    </div>
+  );
+}
 
 // Image component with loading and error states
 function ImageWithFallback({
@@ -73,21 +92,61 @@ function ImageWithFallback({
   );
 }
 
-export function CaptionViewer({ captions, isAuthenticated, initialVotes }: CaptionViewerProps) {
+export function CaptionViewer({
+  captions,
+  isAuthenticated,
+  initialVotes,
+  highlightImageId,
+  onHighlightShown
+}: CaptionViewerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isVoting, setIsVoting] = useState(false);
+  const [votingButton, setVotingButton] = useState<'up' | 'down' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [votes, setVotes] = useState<UserVotes>(initialVotes);
+  const [toast, setToast] = useState<{ message: string; show: boolean }>({ message: '', show: false });
+  const [isNewCaption, setIsNewCaption] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const currentCaption = captions[currentIndex];
   const currentVote = currentCaption ? votes[currentCaption.id] : undefined;
   const hasPrev = currentIndex > 0;
   const hasNext = currentIndex < captions.length - 1;
 
+  // Show toast notification
+  const showToast = useCallback((message: string) => {
+    setToast({ message, show: true });
+    setTimeout(() => setToast({ message: '', show: false }), 2000);
+  }, []);
+
+  // Handle scrolling to and highlighting new captions
+  useEffect(() => {
+    if (highlightImageId && captions.length > 0) {
+      // Find the first caption with this image_id (newest will be at index 0 due to ordering)
+      const newCaptionIndex = captions.findIndex(c => c.image_id === highlightImageId);
+      if (newCaptionIndex !== -1) {
+        setCurrentIndex(newCaptionIndex);
+        setIsNewCaption(true);
+
+        // Scroll the card into view smoothly
+        setTimeout(() => {
+          cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+
+        // Clear highlight after animation
+        setTimeout(() => {
+          setIsNewCaption(false);
+          onHighlightShown?.();
+        }, 3000);
+      }
+    }
+  }, [highlightImageId, captions, onHighlightShown]);
+
   function goToPrev() {
     if (hasPrev) {
       setCurrentIndex(currentIndex - 1);
       setError(null);
+      setIsNewCaption(false);
     }
   }
 
@@ -95,6 +154,7 @@ export function CaptionViewer({ captions, isAuthenticated, initialVotes }: Capti
     if (hasNext) {
       setCurrentIndex(currentIndex + 1);
       setError(null);
+      setIsNewCaption(false);
     }
   }
 
@@ -105,13 +165,20 @@ export function CaptionViewer({ captions, isAuthenticated, initialVotes }: Capti
       setCurrentIndex(0);
     }
     setError(null);
+    setIsNewCaption(false);
   }
 
   async function handleVote(voteValue: 1 | -1) {
     if (!isAuthenticated || isVoting) return;
 
+    const buttonType = voteValue === 1 ? 'up' : 'down';
+    setVotingButton(buttonType);
     setIsVoting(true);
     setError(null);
+
+    // Optimistic update - immediately show the vote
+    const previousVote = votes[currentCaption.id];
+    setVotes(prev => ({ ...prev, [currentCaption.id]: voteValue }));
 
     try {
       const response = await fetch('/api/caption-vote', {
@@ -123,22 +190,49 @@ export function CaptionViewer({ captions, isAuthenticated, initialVotes }: Capti
       const data = await response.json();
 
       if (!response.ok) {
+        // Revert optimistic update on error
+        setVotes(prev => {
+          const newVotes = { ...prev };
+          if (previousVote !== undefined) {
+            newVotes[currentCaption.id] = previousVote;
+          } else {
+            delete newVotes[currentCaption.id];
+          }
+          return newVotes;
+        });
         setError(data.error || 'Failed to vote');
         setIsVoting(false);
+        setVotingButton(null);
         return;
       }
 
-      // Update local vote state
-      setVotes(prev => ({ ...prev, [currentCaption.id]: voteValue }));
-      setIsVoting(false);
+      // Show success toast
+      showToast(voteValue === 1 ? 'Upvoted!' : 'Downvoted!');
 
-      // Only auto-advance if the vote actually changed
-      if (data.changed) {
-        advanceToNext();
-      }
+      // Brief delay before allowing next vote (prevents spam)
+      setTimeout(() => {
+        setIsVoting(false);
+        setVotingButton(null);
+
+        // Only auto-advance if the vote actually changed
+        if (data.changed) {
+          advanceToNext();
+        }
+      }, 300);
     } catch (err) {
+      // Revert optimistic update on error
+      setVotes(prev => {
+        const newVotes = { ...prev };
+        if (previousVote !== undefined) {
+          newVotes[currentCaption.id] = previousVote;
+        } else {
+          delete newVotes[currentCaption.id];
+        }
+        return newVotes;
+      });
       setError('Failed to vote');
       setIsVoting(false);
+      setVotingButton(null);
     }
   }
 
@@ -160,8 +254,28 @@ export function CaptionViewer({ captions, isAuthenticated, initialVotes }: Capti
 
   return (
     <div className="max-w-2xl mx-auto">
-      {/* Card */}
-      <div className="card-elevated rounded-2xl overflow-hidden mb-6">
+      {/* Toast notification for vote feedback */}
+      <Toast message={toast.message} show={toast.show} type="success" />
+
+      {/* Card - with optional new caption highlight */}
+      <div
+        ref={cardRef}
+        className={`card-elevated rounded-2xl overflow-hidden mb-6 transition-all duration-300 ${
+          isNewCaption ? 'new-caption-highlight fade-in-up' : ''
+        }`}
+      >
+        {/* New caption badge */}
+        {isNewCaption && (
+          <div className="px-5 pt-4 pb-0">
+            <span className="new-badge">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6l2.1 2.1M5.6 18.4l2.1-2.1m8.6-8.6l2.1-2.1"/>
+              </svg>
+              New
+            </span>
+          </div>
+        )}
+
         {/* Image */}
         <div className="aspect-video relative image-container" key={currentCaption.id}>
           <ImageWithFallback
@@ -183,31 +297,37 @@ export function CaptionViewer({ captions, isAuthenticated, initialVotes }: Capti
             </div>
           )}
 
-          {/* Voting */}
+          {/* Voting - with animation feedback */}
           {isAuthenticated ? (
             <div className="flex items-center gap-3">
               <button
                 onClick={() => handleVote(1)}
                 disabled={isVoting}
-                className={`vote-btn vote-btn-up ${currentVote === 1 ? 'active' : ''}`}
+                className={`vote-btn vote-btn-up ${currentVote === 1 ? 'active' : ''} ${
+                  votingButton === 'up' ? 'voting' : ''
+                }`}
                 title="Upvote"
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill={currentVote === 1 ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
                 </svg>
               </button>
               <button
                 onClick={() => handleVote(-1)}
                 disabled={isVoting}
-                className={`vote-btn vote-btn-down ${currentVote === -1 ? 'active' : ''}`}
+                className={`vote-btn vote-btn-down ${currentVote === -1 ? 'active' : ''} ${
+                  votingButton === 'down' ? 'voting' : ''
+                }`}
                 title="Downvote"
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill={currentVote === -1 ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17" />
                 </svg>
               </button>
               {isVoting && (
-                <div className="spinner ml-2"></div>
+                <span className="text-xs text-slate-500 dark:text-slate-400 ml-1">
+                  Saving...
+                </span>
               )}
             </div>
           ) : (

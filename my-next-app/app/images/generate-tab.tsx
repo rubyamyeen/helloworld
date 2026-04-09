@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 
 type GenerateResult = {
   cdnUrl: string;
@@ -10,7 +10,62 @@ type GenerateResult = {
 
 type GenerateTabProps = {
   onViewGallery: () => void;
+  onCaptionsGenerated?: (imageId: string) => void;
 };
+
+// Progress steps for better user feedback during generation
+const PROGRESS_STEPS = [
+  { message: 'Preparing your image', duration: 1500 },
+  { message: 'Uploading to cloud storage', duration: 3000 },
+  { message: 'Analyzing image content', duration: 8000 },
+  { message: 'Generating creative captions', duration: 15000 },
+  { message: 'Almost there', duration: 30000 },
+] as const;
+
+/**
+ * Normalizes image orientation by reading EXIF data and rotating via canvas.
+ * This fixes sideways/upside-down photos from mobile devices.
+ */
+async function normalizeImageOrientation(file: File): Promise<File> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      // Create canvas and draw the image - browser handles EXIF orientation
+      // when using image-orientation: from-image CSS, but we also normalize
+      // the actual file data for consistent server-side handling
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) {
+        resolve(file);
+        return;
+      }
+
+      // Set canvas size to image dimensions
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+
+      // Draw image (browser auto-applies EXIF orientation in modern browsers)
+      ctx.drawImage(img, 0, 0);
+
+      // Convert back to blob/file
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const normalizedFile = new File([blob], file.name, {
+            type: file.type || 'image/jpeg',
+            lastModified: Date.now()
+          });
+          resolve(normalizedFile);
+        } else {
+          resolve(file);
+        }
+      }, file.type || 'image/jpeg', 0.92);
+    };
+
+    img.onerror = () => resolve(file);
+    img.src = URL.createObjectURL(file);
+  });
+}
 
 // Image component with loading and error states
 function ResultImage({ src, alt }: { src: string; alt: string }) {
@@ -50,28 +105,76 @@ function ResultImage({ src, alt }: { src: string; alt: string }) {
   );
 }
 
-export function GenerateTab({ onViewGallery }: GenerateTabProps) {
+export function GenerateTab({ onViewGallery, onCaptionsGenerated }: GenerateTabProps) {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState<string>('');
+  const [progressStep, setProgressStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<GenerateResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const progressTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  // Simulate progress steps to give users feedback during long generation
+  const startProgressAnimation = useCallback(() => {
+    setProgressStep(0);
+    let step = 0;
+
+    const advanceStep = () => {
+      if (step < PROGRESS_STEPS.length - 1) {
+        step++;
+        setProgressStep(step);
+        setProgress(PROGRESS_STEPS[step].message);
+        progressTimerRef.current = setTimeout(advanceStep, PROGRESS_STEPS[step].duration);
+      }
+    };
+
+    setProgress(PROGRESS_STEPS[0].message);
+    progressTimerRef.current = setTimeout(advanceStep, PROGRESS_STEPS[0].duration);
+  }, []);
+
+  const stopProgressAnimation = useCallback(() => {
+    if (progressTimerRef.current) {
+      clearTimeout(progressTimerRef.current);
+      progressTimerRef.current = null;
+    }
+  }, []);
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      setFile(selectedFile);
       setError(null);
       setResult(null);
 
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        setPreview(ev.target?.result as string);
+      // Show loading state while normalizing
+      setFile(selectedFile);
+
+      // Create preview using canvas to handle EXIF orientation
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          ctx.drawImage(img, 0, 0);
+          setPreview(canvas.toDataURL('image/jpeg', 0.9));
+        } else {
+          // Fallback to direct data URL
+          const reader = new FileReader();
+          reader.onload = (ev) => setPreview(ev.target?.result as string);
+          reader.readAsDataURL(selectedFile);
+        }
+        URL.revokeObjectURL(img.src);
       };
-      reader.readAsDataURL(selectedFile);
+      img.onerror = () => {
+        // Fallback
+        const reader = new FileReader();
+        reader.onload = (ev) => setPreview(ev.target?.result as string);
+        reader.readAsDataURL(selectedFile);
+      };
+      img.src = URL.createObjectURL(selectedFile);
     }
   }
 
@@ -80,6 +183,9 @@ export function GenerateTab({ onViewGallery }: GenerateTabProps) {
     setPreview(null);
     setError(null);
     setResult(null);
+    setProgress('');
+    setProgressStep(0);
+    stopProgressAnimation();
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -92,14 +198,14 @@ export function GenerateTab({ onViewGallery }: GenerateTabProps) {
     setIsUploading(true);
     setError(null);
     setResult(null);
+    startProgressAnimation();
 
     try {
-      setProgress('Getting upload URL...');
+      // Normalize image orientation before upload
+      const normalizedFile = await normalizeImageOrientation(file);
 
       const formData = new FormData();
-      formData.append('file', file);
-
-      setProgress('Uploading and generating captions...');
+      formData.append('file', normalizedFile);
 
       const response = await fetch('/api/pipeline/generate-captions', {
         method: 'POST',
@@ -112,9 +218,16 @@ export function GenerateTab({ onViewGallery }: GenerateTabProps) {
         throw new Error(data.error || 'Failed to generate captions');
       }
 
+      stopProgressAnimation();
       setProgress('');
       setResult(data);
+
+      // Notify parent about new captions for gallery highlighting
+      if (onCaptionsGenerated && data.imageId) {
+        onCaptionsGenerated(data.imageId);
+      }
     } catch (err) {
+      stopProgressAnimation();
       setError(err instanceof Error ? err.message : 'An error occurred');
       setProgress('');
     } finally {
@@ -225,7 +338,7 @@ export function GenerateTab({ onViewGallery }: GenerateTabProps) {
             </div>
           )}
 
-          {/* Submit button */}
+          {/* Submit button - disabled during upload to prevent duplicates */}
           <button
             type="submit"
             disabled={!file || isUploading}
@@ -233,8 +346,8 @@ export function GenerateTab({ onViewGallery }: GenerateTabProps) {
           >
             {isUploading ? (
               <span className="flex items-center justify-center gap-2">
-                <div className="spinner"></div>
-                Processing...
+                <div className="spinner-white"></div>
+                Generating...
               </span>
             ) : (
               <span className="flex items-center justify-center gap-2">
@@ -247,13 +360,35 @@ export function GenerateTab({ onViewGallery }: GenerateTabProps) {
           </button>
         </form>
 
-        {/* Progress */}
+        {/* Progress - enhanced with timing info and animated feedback */}
         {progress && (
-          <div className="mt-5 p-3 rounded-xl" style={{ background: 'var(--accent-muted)' }}>
-            <p className="text-sm flex items-center gap-2" style={{ color: 'var(--accent-primary)' }}>
-              <div className="spinner"></div>
-              {progress}
-            </p>
+          <div className="mt-5 p-4 rounded-xl loading-glow" style={{ background: 'var(--accent-muted)' }}>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="spinner-lg"></div>
+              <div>
+                <p className="text-sm font-medium loading-dots" style={{ color: 'var(--accent-primary)' }}>
+                  {progress}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  This may take up to a minute
+                </p>
+              </div>
+            </div>
+            {/* Progress indicator dots */}
+            <div className="flex gap-1.5 mt-3">
+              {PROGRESS_STEPS.map((_, idx) => (
+                <div
+                  key={idx}
+                  className="h-1.5 rounded-full transition-all duration-300"
+                  style={{
+                    width: idx <= progressStep ? '24px' : '8px',
+                    background: idx <= progressStep
+                      ? 'var(--accent-primary)'
+                      : 'rgba(148, 163, 184, 0.3)'
+                  }}
+                />
+              ))}
+            </div>
           </div>
         )}
 

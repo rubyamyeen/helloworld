@@ -8,6 +8,7 @@ type CaptionWithImage = {
   id: string;
   content: string;
   image_url: string | null;
+  image_id?: string;
 };
 
 type UserVotes = Record<string, number>; // captionId -> voteValue (1 or -1)
@@ -18,6 +19,7 @@ async function getCaptionsWithImages(supabase: Awaited<ReturnType<typeof createS
     .select(`
       id,
       content,
+      image_id,
       images ( url )
     `)
     .order('created_datetime_utc', { ascending: false });
@@ -30,6 +32,7 @@ async function getCaptionsWithImages(supabase: Awaited<ReturnType<typeof createS
     id: caption.id,
     content: caption.content,
     image_url: caption.images?.url || null,
+    image_id: caption.image_id,
   }));
 
   return { data: captions, error: null };

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { CaptionViewer } from './caption-viewer';
 import { GenerateTab } from './generate-tab';
 
@@ -8,6 +9,7 @@ type CaptionWithImage = {
   id: string;
   content: string;
   image_url: string | null;
+  image_id?: string;
 };
 
 type UserVotes = Record<string, number>;
@@ -20,8 +22,27 @@ type TabWrapperProps = {
 
 type Tab = 'gallery' | 'generate';
 
-export function TabWrapper({ captions, isAuthenticated, initialVotes }: TabWrapperProps) {
+export function TabWrapper({ captions: initialCaptions, isAuthenticated, initialVotes }: TabWrapperProps) {
   const [activeTab, setActiveTab] = useState<Tab>('gallery');
+  const [highlightImageId, setHighlightImageId] = useState<string | null>(null);
+  const router = useRouter();
+
+  // Called when new captions are generated - triggers gallery refresh and highlight
+  const handleCaptionsGenerated = useCallback((imageId: string) => {
+    setHighlightImageId(imageId);
+  }, []);
+
+  // Switch to gallery and highlight new captions
+  const handleViewGallery = useCallback(() => {
+    setActiveTab('gallery');
+    // Refresh the page data to get new captions from server
+    router.refresh();
+  }, [router]);
+
+  // Clear highlight after it's been shown
+  const handleHighlightShown = useCallback(() => {
+    setHighlightImageId(null);
+  }, []);
 
   return (
     <div>
@@ -56,12 +77,17 @@ export function TabWrapper({ captions, isAuthenticated, initialVotes }: TabWrapp
       {/* Tab content */}
       {activeTab === 'gallery' ? (
         <CaptionViewer
-          captions={captions}
+          captions={initialCaptions}
           isAuthenticated={isAuthenticated}
           initialVotes={initialVotes}
+          highlightImageId={highlightImageId}
+          onHighlightShown={handleHighlightShown}
         />
       ) : (
-        <GenerateTab onViewGallery={() => setActiveTab('gallery')} />
+        <GenerateTab
+          onViewGallery={handleViewGallery}
+          onCaptionsGenerated={handleCaptionsGenerated}
+        />
       )}
     </div>
   );
